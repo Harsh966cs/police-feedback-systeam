@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Alert, Box, Button, Card, CardContent, Stack, TextField, Typography } from "@mui/material";
 import OtpVerification from "../otpverficaton/Otpverficat";
+import Ashoka from "../../Images/download.png";
 
 const Login = ({ onLoginSuccess, onGoSignup }) => {
   const [name, setName] = useState("");
@@ -31,36 +32,44 @@ const Login = ({ onLoginSuccess, onGoSignup }) => {
 
   return (
     <Box sx={{ minHeight: "100vh", display: "grid", placeItems: "center", backgroundColor: "#F4D1A4", p: 2 }}>
-      <Card sx={{ width: "min(620px, 95vw)", backgroundColor: "#FFE8A3" }}>
-        <CardContent>
-          <Typography variant="h4" align="center" sx={{ mb: 2 }}>
-            Login
+      <Box sx={{ width: "min(620px, 95vw)" }}>
+        <Box sx={{ textAlign: "center", mb: 2 }}>
+          <img style={{ width: 56 }} src={Ashoka} alt="Ashoka emblem" />
+          <Typography variant="h5" sx={{ color: "#000080", fontWeight: 700 }}>
+            Rajasthan Police Feedback System
           </Typography>
-          <Stack spacing={2}>
-            <TextField label="Full Name" value={name} onChange={(e) => setName(e.target.value)} required />
-            <TextField
-              label="Mobile Number"
-              value={mobileNo}
-              inputMode="numeric"
-              inputProps={{ maxLength: 10, pattern: "[0-9]*" }}
-              onChange={(e) => setMobileNo(e.target.value.replace(/\D/g, "").slice(0, 10))}
-              required
-            />
-            <OtpVerification email={email} onEmailChange={setEmail} onVerified={setOtpVerified} />
+        </Box>
+        <Card sx={{ backgroundColor: "#FFE8A3" }}>
+          <CardContent>
+            <Typography variant="h4" align="center" sx={{ mb: 2 }}>
+              Login
+            </Typography>
+            <Stack spacing={2}>
+              <TextField label="Full Name" value={name} onChange={(e) => setName(e.target.value)} required />
+              <TextField
+                label="Mobile Number"
+                value={mobileNo}
+                inputMode="numeric"
+                inputProps={{ maxLength: 10, pattern: "[0-9]*" }}
+                onChange={(e) => setMobileNo(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                required
+              />
+              <OtpVerification email={email} onEmailChange={setEmail} onVerified={setOtpVerified} />
 
-            {status.message ? <Alert severity={status.type || "info"}>{status.message}</Alert> : null}
+              {status.message ? <Alert severity={status.type || "info"}>{status.message}</Alert> : null}
 
-            <Stack direction="row" spacing={1}>
-              <Button variant="contained" onClick={handleContinue}>
-                Continue
-              </Button>
-              <Button variant="text" onClick={onGoSignup}>
-                New user? Sign up
-              </Button>
+              <Stack direction="row" spacing={1}>
+                <Button variant="contained" onClick={handleContinue}>
+                  Continue
+                </Button>
+                <Button variant="text" onClick={onGoSignup}>
+                  New user? Sign up
+                </Button>
+              </Stack>
             </Stack>
-          </Stack>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </Box>
     </Box>
   );
 };

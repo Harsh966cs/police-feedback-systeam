@@ -186,6 +186,10 @@ app.post("/feedback", async (req, res) => {
       return res.status(400).json({ error: "Mobile number must contain exactly 10 digits." });
     }
 
+    if (!/^\d{6}$/.test(String(payload.PINCODE))) {
+      return res.status(400).json({ error: "PIN code must contain exactly 6 digits." });
+    }
+
     const recaptchaValid = await verifyRecaptcha(
       recaptchaToken,
       req.headers["x-forwarded-for"] || req.socket.remoteAddress

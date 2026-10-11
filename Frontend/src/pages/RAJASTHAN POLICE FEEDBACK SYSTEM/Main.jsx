@@ -23,7 +23,59 @@ import "./main.css";
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "";
 
-const districts = ["Ajmer", "Alwar", "Jaipur", "Jodhpur", "Kota", "Udaipur", "Bikaner"];
+const cities = [
+  "Ajmer",
+  "Alwar",
+  "Anupgarh",
+  "Balotra",
+  "Banswara",
+  "Baran",
+  "Barmer",
+  "Beawar",
+  "Bharatpur",
+  "Bhilwara",
+  "Bikaner",
+  "Bundi",
+  "Chittorgarh",
+  "Churu",
+  "Dausa",
+  "Deeg",
+  "Dholpur",
+  "Didwana-Kuchaman",
+  "Dungarpur",
+  "Gangapur City",
+  "Hanumangarh",
+  "Jaipur",
+  "Jaipur Rural",
+  "Jaisalmer",
+  "Jalore",
+  "Jhalawar",
+  "Jhunjhunu",
+  "Jodhpur",
+  "Jodhpur Rural",
+  "Karauli",
+  "Kekri",
+  "Khairthal-Tijara",
+  "Kota",
+  "Kotputli-Behror",
+  "Nagaur",
+  "Neem Ka Thana",
+  "Pali",
+  "Phalodi",
+  "Pratapgarh",
+  "Rajsamand",
+  "Salumbar",
+  "Sawai Madhopur",
+  "Shahpura",
+  "Sikar",
+  "Sirohi",
+  "Sri Ganganagar",
+  "Tonk",
+  "Udaipur",
+  "Sanchore",
+  "Barmer City",
+];
+
 const feedbackTypes = [
   "General Enquiry",
   "Complaint",
@@ -45,7 +97,6 @@ const feedbackTypeLabels = {
 };
 
 const createInitialForm = (prefill = {}) => ({
-  District: "",
   PoliceStation: "",
   name: prefill.name || "",
   mobileNo: prefill.mobileNo || "",
@@ -74,7 +125,6 @@ const Main = ({ prefill = {}, skipOtpVerification = false }) => {
           ? "आपकी ईमानदार प्रतिक्रिया हमें सार्वजनिक सेवा बेहतर बनाने में मदद करती है।"
           : "Your honest feedback helps us improve public service.",
       name: language === "hindi" ? "पूरा नाम" : "Full Name",
-      district: language === "hindi" ? "जिला" : "District",
       station: language === "hindi" ? "पुलिस थाना" : "Police Station",
       mobile: language === "hindi" ? "मोबाइल नंबर" : "Mobile No",
       address: language === "hindi" ? "पता" : "Address",
@@ -98,12 +148,14 @@ const Main = ({ prefill = {}, skipOtpVerification = false }) => {
     }
   };
 
-  const resetForm = () => {
+  const resetForm = (clearStatus = true) => {
     setFormData(createInitialForm(prefill));
     setOtpVerified(Boolean(skipOtpVerification));
     setCaptchaToken("");
     setGeneralSubject("");
-    setStatus({ type: "", message: "" });
+    if (clearStatus) {
+      setStatus({ type: "", message: "" });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -112,6 +164,11 @@ const Main = ({ prefill = {}, skipOtpVerification = false }) => {
 
     if (!/^\d{10}$/.test(formData.mobileNo)) {
       setStatus({ type: "error", message: "Mobile number must contain exactly 10 digits." });
+      return;
+    }
+
+    if (!/^\d{6}$/.test(formData.PINCODE)) {
+      setStatus({ type: "error", message: "PIN code must contain exactly 6 digits." });
       return;
     }
 
@@ -137,11 +194,11 @@ const Main = ({ prefill = {}, skipOtpVerification = false }) => {
         recaptchaToken: captchaToken,
       });
 
+      resetForm(false);
       setStatus({
         type: "success",
         message: response.data?.message || "Feedback submitted successfully.",
       });
-      resetForm();
     } catch (error) {
       const message = error?.response?.data?.error || "Failed to submit feedback.";
       setStatus({ type: "error", message });
@@ -184,29 +241,12 @@ const Main = ({ prefill = {}, skipOtpVerification = false }) => {
                 onChange={(e) => handleChange("name", e.target.value)}
               />
 
-              <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-                <FormControl fullWidth required>
-                  <InputLabel>{labels.district}</InputLabel>
-                  <Select
-                    label={labels.district}
-                    value={formData.District}
-                    onChange={(e) => handleChange("District", e.target.value)}
-                  >
-                    {districts.map((district) => (
-                      <MenuItem key={district} value={district}>
-                        {district}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <TextField
-                  fullWidth
-                  required
-                  label={labels.station}
-                  value={formData.PoliceStation}
-                  onChange={(e) => handleChange("PoliceStation", e.target.value)}
-                />
-              </Stack>
+              <TextField
+                required
+                label={labels.station}
+                value={formData.PoliceStation}
+                onChange={(e) => handleChange("PoliceStation", e.target.value)}
+              />
 
               <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
                 <TextField
@@ -224,7 +264,9 @@ const Main = ({ prefill = {}, skipOtpVerification = false }) => {
                   required
                   label={labels.pin}
                   value={formData.PINCODE}
-                  onChange={(e) => handleChange("PINCODE", e.target.value.replace(/[^0-9]/g, ""))}
+                  inputMode="numeric"
+                  inputProps={{ maxLength: 6, pattern: "[0-9]*" }}
+                  onChange={(e) => handleChange("PINCODE", e.target.value.replace(/\D/g, "").slice(0, 6))}
                 />
               </Stack>
 
@@ -234,12 +276,20 @@ const Main = ({ prefill = {}, skipOtpVerification = false }) => {
                 value={formData.address}
                 onChange={(e) => handleChange("address", e.target.value)}
               />
-              <TextField
-                required
-                label={labels.city}
-                value={formData.location}
-                onChange={(e) => handleChange("location", e.target.value)}
-              />
+              <FormControl fullWidth required>
+                <InputLabel>{labels.city}</InputLabel>
+                <Select
+                  label={labels.city}
+                  value={formData.location}
+                  onChange={(e) => handleChange("location", e.target.value)}
+                >
+                  {cities.map((city) => (
+                    <MenuItem key={city} value={city}>
+                      {city}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
               {skipOtpVerification ? (
                 <TextField required label="Email" value={formData.email} disabled />

@@ -64,6 +64,8 @@ Backend `.env`:
 ```env
 PORT=3000
 DB_URL=
+FEEDBACK_DB_NAME=FEEDBACK
+FEEDBACK_COLLECTION=FEEDBACK_COLLECTION
 SMTP_SERVICE=gmail
 SMTP_USER=
 SMTP_PASS=
@@ -76,6 +78,12 @@ OTP_DEBUG_RESPONSE=false
 ```
 
 Never commit `.env` files or credentials.
+
+The backend explicitly writes feedback to the `FEEDBACK` database and the
+`FEEDBACK_COLLECTION` collection by default. `FEEDBACK_DB_NAME` and
+`FEEDBACK_COLLECTION` can be changed only when a different MongoDB target is
+intended. The database name is applied even if `DB_URL` contains another
+database path, such as `test`.
 
 ## API routes
 

@@ -16,9 +16,10 @@ async function connect() {
   }
 
   try {
-    await mongoose.connect(dbUrl);
+    const dbName = process.env.FEEDBACK_DB_NAME || "FEEDBACK";
+    await mongoose.connect(dbUrl, { dbName });
     isConnected = true;
-    console.log("MongoDB connected successfully.");
+    console.log(`MongoDB connected successfully to database "${mongoose.connection.name}".`);
     return true;
   } catch (error) {
     console.error("MongoDB connection failed:", error.message);
