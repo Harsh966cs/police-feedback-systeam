@@ -1,10 +1,10 @@
 import { TextField } from "@mui/material";
 
-const GeneralEnquiry = ({ value, onChange }) => {
+const GeneralEnquiry = ({ value, onChange, language = "english" }) => {
   return (
     <TextField
-      label="Subject (General Enquiry)"
-      placeholder="Enter enquiry subject"
+      label={language === "hindi" ? "विषय (सामान्य पूछताछ)" : "Subject (General Enquiry)"}
+      placeholder={language === "hindi" ? "पूछताछ का विषय लिखें" : "Enter enquiry subject"}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       fullWidth

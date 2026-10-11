@@ -1,53 +1,122 @@
 # Rajasthan Police Feedback System
 
-## Introduction  
+A resume-ready citizen feedback application built with React, Express,
+MongoDB, email OTP verification, and Google reCAPTCHA.
 
-In today's complex scenario, obtaining feedback on police operations is a challenge. This project addresses these multifaceted issues by providing a solution framework. 
-## This is presentation link for feedbackForm System
+## Architecture
 
-<a href="https://drive.google.com/file/d/1mZ5-TJW0W2kW8NrCJUVIVUJUOamWntY_/view?usp=drivesdk">feedback Form System Presentation </a>
+```text
+Frontend (React/Vite)  ->  Backend (Express)  ->  MongoDB
+                                  |
+                                  -> SMTP email for OTP
+                                  -> Google reCAPTCHA verification
+```
 
+- `Frontend/` contains the public feedback UI and OTP flow.
+- `Backend/` contains the API and feedback persistence.
+- The active backend entry point is `Backend/api/Feedback.js`.
 
+## Features
 
-## Frontend Development:
+- OTP verification through email.
+- Login and signup-style entry flow.
+- Feedback categories including complaints, suggestions, cyber crime, and
+  general enquiries.
+- District, police station, contact, address, and feedback fields.
+- Google reCAPTCHA before submission.
+- MongoDB persistence when configured.
+- English/Hindi display toggle.
 
-### Built With:
-- [![Yarn](https://img.shields.io/badge/Yarn-v1.0.2-brightgreen?style=for-the-badge&logo=yarn)](https://yarnpkg.com/)
-- [![Vite](https://img.shields.io/badge/Vite-v2.7.0-brightgreen?style=for-the-badge&logo=vite)](https://vitejs.dev/)
-- [![React](https://img.shields.io/badge/React-v18.2.0-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
-- [![Material-UI](https://img.shields.io/badge/Material--UI-v5.0.0-blue?style=for-the-badge&logo=material-ui)](https://material-ui.com/)
-- [![axios](https://img.shields.io/badge/axios-v0.24.0-blue?style=for-the-badge&logo=axios)](https://axios-http.com/)
-- [![Chatbot](https://img.shields.io/badge/Chatbot-Active-brightgreen?style=for-the-badge&logo=chatbot)](https://mediafiles.botpress.cloud/e0ef0244-55de-4369-8388-16e907f457e0/webchat/bot.html)
+## Local setup
 
+### Backend
 
-### Rajasthan Police Feedback System Frontend
+```bash
+cd Backend
+npm install
+cp .env.example .env
+npm start
+```
 
-By using technologies such as Yarn, Vite, React, Material-UI, axios, and an active chatbot, the frontend provides a comprehensive feedback system for the Rajasthan Police.
+### Frontend
 
-...
+```bash
+cd Frontend
+npm install
+cp .env.example .env
+npm run dev
+```
 
-## Backend Development:
+The frontend runs on the Vite development URL and calls the backend at
+`http://localhost:3000` by default.
 
-### Built With:
-- [![Yarn](https://img.shields.io/badge/Yarn-v1.0.2-brightgreen?style=for-the-badge&logo=yarn)](https://yarnpkg.com/)
-- [![MongoDB](https://img.shields.io/badge/MongoDB-v6.0.7-green?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
-- [![Nodemailer](https://img.shields.io/badge/Nodemailer-v6.9.8-blue?style=for-the-badge&logo=nodemailer)](https://nodemailer.com/)
-- [![CORS](https://img.shields.io/badge/CORS-Supported-brightgreen?style=for-the-badge)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+## Environment variables
 
-### Rajasthan Police Feedback System Backend
+Frontend `.env`:
 
-...
+```env
+VITE_API_BASE_URL=http://localhost:3000
+VITE_RECAPTCHA_SITE_KEY=
+```
 
-## Installation and Usage:
+Backend `.env`:
 
-...
+```env
+PORT=3000
+DB_URL=
+SMTP_SERVICE=gmail
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM=
+RECAPTCHA_SECRET=
+OTP_TTL_MS=300000
+OTP_RESEND_MS=60000
+OTP_MAX_VERIFY_ATTEMPTS=5
+OTP_DEBUG_RESPONSE=false
+```
 
-## License:
+Never commit `.env` files or credentials.
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+## API routes
 
-## Contact:
+| Method | Route | Purpose |
+| --- | --- | --- |
+| GET | `/health` | Check service and database availability |
+| POST | `/otp/send` | Send an email OTP |
+| POST | `/otp/verify` | Verify an email OTP |
+| POST | `/feedback` | Validate and persist feedback |
 
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
+## Validation commands
 
-Project Link: [https://github.com/your-username/repo-name](https://github.com/your-username/repo-name)
+```bash
+cd Frontend && npm run lint
+cd Frontend && npm run build
+node --check Backend/api/Feedback.js
+```
+
+## Resume-demo deployment
+
+Deploy the backend first, configure its database, SMTP, reCAPTCHA, and OTP
+variables, then verify `/health`. Deploy the frontend with
+`VITE_API_BASE_URL` set to the deployed backend URL and
+`VITE_RECAPTCHA_SITE_KEY` set to the public reCAPTCHA key.
+
+Before sharing the demo, verify:
+
+1. OTP email arrives.
+2. OTP verification succeeds.
+3. reCAPTCHA completes.
+4. Feedback submission returns success.
+5. A feedback record appears in MongoDB.
+6. The frontend works on a mobile-sized viewport.
+
+See [`plan.md`](./plan.md), [`CLAUDE.md`](./CLAUDE.md), and the local deployment
+skill at [`skills/resume-demo-deployment/SKILL.md`](./skills/resume-demo-deployment/SKILL.md).
+
+## Known limitations
+
+- OTP state is stored in backend memory and is not shared across instances.
+- Login/signup verifies email ownership but does not create persistent accounts.
+- There is no admin dashboard or feedback export workflow.
+- Real SMTP, MongoDB, and reCAPTCHA credentials are required for a complete
+  public demo.

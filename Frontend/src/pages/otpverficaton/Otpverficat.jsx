@@ -5,15 +5,17 @@ import { Alert, Button, TextField } from "@mui/material";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
-const OtpVerification = ({ email, onEmailChange, onVerified }) => {
+const OtpVerification = ({ email, onEmailChange, onVerified, language = "english" }) => {
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const [status, setStatus] = useState({ type: "", message: "" });
   const [debugOtp, setDebugOtp] = useState("");
 
   useEffect(() => {
     setOtp("");
     setOtpSent(false);
+    setResendCooldown(0);
     setStatus({ type: "", message: "" });
     setDebugOtp("");
     if (onVerified) {
@@ -21,11 +23,23 @@ const OtpVerification = ({ email, onEmailChange, onVerified }) => {
     }
   }, [email, onVerified]);
 
-  const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  useEffect(() => {
+    if (resendCooldown <= 0) {
+      return undefined;
+    }
+
+    const timer = window.setInterval(() => {
+      setResendCooldown((remaining) => Math.max(remaining - 1, 0));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [resendCooldown]);
+
+  const isValidEmail = (value) => /^[^\s@]+@gmail\.com$/i.test(value);
 
   const handleSendOTP = async () => {
     if (!isValidEmail(email || "")) {
-      setStatus({ type: "error", message: "Enter a valid email before sending OTP." });
+      setStatus({ type: "error", message: "Enter a valid Gmail address before sending OTP." });
       return;
     }
     try {
@@ -40,17 +54,28 @@ const OtpVerification = ({ email, onEmailChange, onVerified }) => {
       const message = error?.response?.data?.error || "Failed to send OTP.";
       setStatus({ type: "error", message });
       setDebugOtp("");
+
+      if (error?.response?.status === 429) {
+        const responseSeconds = Number(error?.response?.data?.retryAfterSeconds);
+        const messageSeconds = Number(message.match(/\d+/)?.[0]);
+        const waitSeconds = Number.isFinite(responseSeconds)
+          ? responseSeconds
+          : Number.isFinite(messageSeconds)
+            ? messageSeconds
+            : 60;
+        setResendCooldown(waitSeconds);
+      }
     }
   };
 
   const handleVerifyOTP = async () => {
-    if (!otp) {
-      setStatus({ type: "error", message: "Enter OTP to verify." });
+    if (!/^\d{6}$/.test(otp)) {
+      setStatus({ type: "error", message: "Enter the 6-digit OTP to verify." });
       return;
     }
     try {
       await axios.post(`${API_BASE}/otp/verify`, { email, otp });
-      setStatus({ type: "success", message: "OTP verified successfully." });
+      setStatus({ type: "success", message: "OTP verified successfully. You can continue." });
       if (onVerified) {
         onVerified(true);
       }
@@ -70,31 +95,47 @@ const OtpVerification = ({ email, onEmailChange, onVerified }) => {
         <TextField
           required
           id="email"
-          label="Email"
+          label={language === "hindi" ? "ईमेल" : "Email"}
           size="small"
           type="email"
           sx={{ backgroundColor: "white", minWidth: "260px" }}
           value={email}
           onChange={(e) => onEmailChange(e.target.value.trim())}
         />
-        <Button variant="contained" onClick={handleSendOTP}>
-          {otpSent ? "Resend OTP" : "Send OTP"}
+        <Button variant="contained" onClick={handleSendOTP} disabled={resendCooldown > 0}>
+          {resendCooldown > 0
+            ? language === "hindi"
+              ? `${resendCooldown} सेकंड में फिर भेजें`
+              : `Resend in ${resendCooldown}s`
+            : otpSent
+            ? language === "hindi"
+              ? "OTP फिर भेजें"
+              : "Resend OTP"
+            : language === "hindi"
+              ? "OTP भेजें"
+              : "Send OTP"}
         </Button>
       </Stack>
       <Stack direction="row" spacing={1}>
         <TextField
           id="otp"
-          label="OTP"
+          label={language === "hindi" ? "OTP" : "OTP"}
           size="small"
+          inputMode="numeric"
+          inputProps={{ maxLength: 6, pattern: "[0-9]*" }}
           value={otp}
-          onChange={(e) => setOtp(e.target.value)}
+          onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
           sx={{ backgroundColor: "white", maxWidth: "140px" }}
         />
         <Button variant="outlined" onClick={handleVerifyOTP} disabled={!otpSent}>
-          Verify OTP
+          {language === "hindi" ? "OTP सत्यापित करें" : "Verify OTP"}
         </Button>
       </Stack>
-      {status.message && <Alert severity={status.type || "info"}>{status.message}</Alert>}
+      {status.message && (
+        <Alert severity={status.type || "info"} role="alert">
+          {status.message}
+        </Alert>
+      )}
       {debugOtp ? <Alert severity="warning">Development OTP: {debugOtp}</Alert> : null}
     </Stack>
   );
