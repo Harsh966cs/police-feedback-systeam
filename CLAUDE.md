@@ -5,7 +5,7 @@
 This repository contains the Rajasthan Police Feedback System:
 
 - `Frontend/` — React 18 + Vite + Material UI application.
-- `Backend/` — CommonJS Express API with MongoDB/Mongoose, SMTP OTP delivery, and reCAPTCHA verification.
+- `Backend/` — CommonJS Express API with MongoDB/Mongoose, Brevo API or SMTP OTP delivery, and reCAPTCHA verification.
 
 The active backend entry point is `Backend/api/Feedback.js`. Older examples under
 `Backend/SubmitedData/` and `Backend/api/helper/otpacces.js` are not part of the
@@ -42,6 +42,7 @@ SMTP_SERVICE=gmail
 SMTP_USER=
 SMTP_PASS=
 SMTP_FROM=
+BREVO_API_KEY=
 RECAPTCHA_SECRET=
 OTP_TTL_MS=300000
 OTP_RESEND_MS=60000

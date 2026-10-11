@@ -36,6 +36,40 @@ function getTransport() {
 }
 
 async function sendMail(toEmail, otp = generateOtp()) {
+  const brevoApiKey = process.env.BREVO_API_KEY;
+  const fromAddress = process.env.SMTP_FROM || process.env.SMTP_USER;
+
+  if (brevoApiKey) {
+    if (!fromAddress) {
+      throw new Error("SMTP_FROM is required when BREVO_API_KEY is configured");
+    }
+
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "api-key": brevoApiKey,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        sender: { email: fromAddress },
+        to: [{ email: toEmail }],
+        subject: "Your OTP verification code",
+        textContent: `Your OTP is ${otp}.`,
+        htmlContent: `<p>Your OTP is <b>${otp}</b>.</p>`,
+      }),
+    });
+
+    if (!response.ok) {
+      const responseBody = await response.text();
+      throw new Error(`Brevo API request failed (${response.status}): ${responseBody}`);
+    }
+
+    const result = await response.json();
+    console.log("OTP email sent through Brevo API:", result.messageId || "accepted");
+    return otp;
+  }
+
   const transport = getTransport();
   if (!transport) {
     console.warn(
@@ -44,7 +78,6 @@ async function sendMail(toEmail, otp = generateOtp()) {
     return otp;
   }
 
-  const fromAddress = process.env.SMTP_FROM || process.env.SMTP_USER;
   const info = await transport.sendMail({
     from: fromAddress,
     to: toEmail,

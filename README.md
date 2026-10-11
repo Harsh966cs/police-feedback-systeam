@@ -68,6 +68,7 @@ SMTP_SERVICE=gmail
 SMTP_USER=
 SMTP_PASS=
 SMTP_FROM=
+BREVO_API_KEY=
 RECAPTCHA_SECRET=
 OTP_TTL_MS=300000
 OTP_RESEND_MS=60000
@@ -96,7 +97,7 @@ node --check Backend/api/Feedback.js
 
 ## Resume-demo deployment
 
-Deploy the backend first, configure its database, SMTP, reCAPTCHA, and OTP
+Deploy the backend first, configure its database, Brevo email delivery, reCAPTCHA, and OTP
 variables, then verify `/health`. Deploy the frontend with
 `VITE_API_BASE_URL` set to the deployed backend URL and
 `VITE_RECAPTCHA_SITE_KEY` set to the public reCAPTCHA key.
@@ -118,5 +119,5 @@ skill at [`skills/resume-demo-deployment/SKILL.md`](./skills/resume-demo-deploym
 - OTP state is stored in backend memory and is not shared across instances.
 - Login/signup verifies email ownership but does not create persistent accounts.
 - There is no admin dashboard or feedback export workflow.
-- Real SMTP, MongoDB, and reCAPTCHA credentials are required for a complete
+- A verified Brevo sender, Brevo API key, MongoDB, and reCAPTCHA credentials are required for a complete
   public demo.

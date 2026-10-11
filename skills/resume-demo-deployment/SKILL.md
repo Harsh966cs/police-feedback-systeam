@@ -24,7 +24,7 @@ cd ../Frontend && npm install && npm run lint && npm run build
 ## Deployment order
 
 1. Deploy `Backend/` with start command `npm start`.
-2. Set backend `PORT`, `DB_URL`, SMTP variables, `RECAPTCHA_SECRET`, and
+2. Set backend `PORT`, `DB_URL`, `BREVO_API_KEY`, `SMTP_FROM`, `RECAPTCHA_SECRET`, and
    `OTP_DEBUG_RESPONSE=false`.
 3. Verify `GET /health`.
 4. Deploy `Frontend/` with build command `npm run build`.
@@ -44,7 +44,7 @@ cd ../Frontend && npm install && npm run lint && npm run build
 
 ## Troubleshooting
 
-- OTP failure: verify SMTP variables, sender address, and provider logs.
+- OTP failure: verify the Brevo API key, verified sender address, and provider logs. SMTP is used only when `BREVO_API_KEY` is absent.
 - CORS failure: allow the exact deployed frontend origin in the backend.
 - CAPTCHA failure: verify the site key domain and backend secret.
 - Database failure: verify the MongoDB network allowlist and connection string.
