@@ -34,6 +34,16 @@ const feedbackTypes = [
   "Cyber Crime",
 ];
 
+const feedbackTypeLabels = {
+  "General Enquiry": "सामान्य पूछताछ",
+  Complaint: "शिकायत",
+  Suggestion: "सुझाव",
+  "Illegal Activity": "अवैध गतिविधि",
+  "Body Offence": "शारीरिक अपराध",
+  "Crime Against Women": "महिलाओं के विरुद्ध अपराध",
+  "Cyber Crime": "साइबर अपराध",
+};
+
 const createInitialForm = (prefill = {}) => ({
   District: "",
   PoliceStation: "",
@@ -47,7 +57,7 @@ const createInitialForm = (prefill = {}) => ({
   feedback: "",
 });
 
-const Main = ({ prefill = {}, skipOtpVerification = false, onBack }) => {
+const Main = ({ prefill = {}, skipOtpVerification = false }) => {
   const [language, setLanguage] = useState("english");
   const [captchaToken, setCaptchaToken] = useState("");
   const [otpVerified, setOtpVerified] = useState(Boolean(skipOtpVerification));
@@ -57,20 +67,26 @@ const Main = ({ prefill = {}, skipOtpVerification = false, onBack }) => {
 
   const labels = useMemo(
     () => ({
-      heading: language === "hindi" ? "Rajasthan Police Feedback System (Hindi)" : "Rajasthan Police Feedback System",
-      subheading: language === "hindi" ? "Citizen Feedback" : "Citizen Feedback",
-      name: language === "hindi" ? "Full Name" : "Full Name",
-      district: language === "hindi" ? "District" : "District",
-      station: language === "hindi" ? "Police Station" : "Police Station",
-      mobile: language === "hindi" ? "Mobile No" : "Mobile No",
-      address: language === "hindi" ? "Address" : "Address",
-      city: language === "hindi" ? "City/Village" : "City/Village",
-      pin: language === "hindi" ? "Pin Code" : "Pin Code",
-      emailOtp: language === "hindi" ? "Email OTP Verification" : "Email OTP Verification",
-      type: language === "hindi" ? "Feedback Type" : "Feedback Type",
-      desc: language === "hindi" ? "Feedback Description" : "Feedback Description",
-      submit: language === "hindi" ? "Submit" : "Submit",
-      reset: language === "hindi" ? "Reset" : "Reset",
+      heading: language === "hindi" ? "राजस्थान पुलिस फीडबैक प्रणाली" : "Rajasthan Police Feedback System",
+      subheading: language === "hindi" ? "नागरिक प्रतिक्रिया" : "Citizen Feedback",
+      tagline:
+        language === "hindi"
+          ? "आपकी ईमानदार प्रतिक्रिया हमें सार्वजनिक सेवा बेहतर बनाने में मदद करती है।"
+          : "Your honest feedback helps us improve public service.",
+      name: language === "hindi" ? "पूरा नाम" : "Full Name",
+      district: language === "hindi" ? "जिला" : "District",
+      station: language === "hindi" ? "पुलिस थाना" : "Police Station",
+      mobile: language === "hindi" ? "मोबाइल नंबर" : "Mobile No",
+      address: language === "hindi" ? "पता" : "Address",
+      city: language === "hindi" ? "शहर/गांव" : "City/Village",
+      pin: language === "hindi" ? "पिन कोड" : "Pin Code",
+      emailOtp: language === "hindi" ? "ईमेल OTP सत्यापन" : "Email OTP Verification",
+      type: language === "hindi" ? "प्रतिक्रिया का प्रकार" : "Feedback Type",
+      desc: language === "hindi" ? "प्रतिक्रिया का विवरण" : "Feedback Description",
+      submit: language === "hindi" ? "जमा करें" : "Submit",
+      reset: language === "hindi" ? "रीसेट करें" : "Reset",
+      english: "English",
+      hindi: "हिंदी",
     }),
     [language]
   );
@@ -93,6 +109,11 @@ const Main = ({ prefill = {}, skipOtpVerification = false, onBack }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus({ type: "", message: "" });
+
+    if (!/^\d{10}$/.test(formData.mobileNo)) {
+      setStatus({ type: "error", message: "Mobile number must contain exactly 10 digits." });
+      return;
+    }
 
     if (!captchaToken) {
       setStatus({ type: "error", message: "Complete reCAPTCHA before submitting." });
@@ -137,26 +158,19 @@ const Main = ({ prefill = {}, skipOtpVerification = false, onBack }) => {
           </Typography>
         </Stack>
         <Stack direction="row" spacing={1} alignItems="center" sx={{ pr: 1 }}>
-          {onBack ? (
-            <Button sx={{ backgroundColor: "#F0E68C", color: "black" }} variant="contained" onClick={onBack}>
-              Back
-            </Button>
-          ) : null}
           <Button
             sx={{ backgroundColor: "#F0E68C", color: "black" }}
             variant="contained"
             onClick={() => setLanguage((prev) => (prev === "hindi" ? "english" : "hindi"))}
           >
-            {language === "hindi" ? "English" : "Hindi"}
+            {language === "hindi" ? labels.english : labels.hindi}
           </Button>
         </Stack>
       </header>
 
       <Box sx={{ py: 2, textAlign: "center", backgroundColor: "hsl(56, 40%, 84%)" }}>
-        <Typography variant="h5">{labels.subheading}</Typography>
-        <Typography sx={{ color: "#000080" }}>
-          Your honest feedback helps us improve public service.
-        </Typography>
+        <Typography variant="h5">        {labels.subheading}</Typography>
+        <Typography sx={{ color: "#000080" }}>{labels.tagline}</Typography>
       </Box>
 
       <Box className="container" sx={{ py: 3 }}>
@@ -200,7 +214,9 @@ const Main = ({ prefill = {}, skipOtpVerification = false, onBack }) => {
                   required
                   label={labels.mobile}
                   value={formData.mobileNo}
-                  onChange={(e) => handleChange("mobileNo", e.target.value.replace(/[^0-9]/g, ""))}
+                  inputMode="numeric"
+                  inputProps={{ maxLength: 10, pattern: "[0-9]*" }}
+                  onChange={(e) => handleChange("mobileNo", e.target.value.replace(/\D/g, "").slice(0, 10))}
                   disabled={Boolean(skipOtpVerification && prefill.mobileNo)}
                 />
                 <TextField
@@ -236,6 +252,7 @@ const Main = ({ prefill = {}, skipOtpVerification = false, onBack }) => {
                     email={formData.email}
                     onEmailChange={(email) => handleChange("email", email)}
                     onVerified={setOtpVerified}
+                    language={language}
                   />
                 </>
               )}
@@ -249,14 +266,14 @@ const Main = ({ prefill = {}, skipOtpVerification = false, onBack }) => {
                 >
                   {feedbackTypes.map((feedbackType) => (
                     <MenuItem key={feedbackType} value={feedbackType}>
-                      {feedbackType}
+                      {language === "hindi" ? feedbackTypeLabels[feedbackType] : feedbackType}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
 
               {formData.feedbackrelatedto === "General Enquiry" ? (
-                <GeneralEnquiry value={generalSubject} onChange={setGeneralSubject} />
+                <GeneralEnquiry value={generalSubject} onChange={setGeneralSubject} language={language} />
               ) : null}
 
               <TextField

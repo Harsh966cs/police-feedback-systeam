@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import Login from "./pages/LoginPage/login";
 import Singupe from "./pages/Singupe/Singupe";
@@ -21,6 +21,23 @@ const App = () => {
     }),
     [user]
   );
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (!user.email) {
+        setScreen("login");
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [user.email]);
+
+  const handleLogout = () => {
+    setUser({ name: "", email: "", mobileNo: "" });
+    setScreen("login");
+    window.history.pushState({ loggedOut: true }, "", window.location.href);
+  };
 
   if (screen === "login") {
     return (
@@ -52,9 +69,7 @@ const App = () => {
         <Button
           variant="outlined"
           color="inherit"
-          onClick={() => {
-            setScreen("login");
-          }}
+          onClick={handleLogout}
         >
           Logout
         </Button>
@@ -62,7 +77,6 @@ const App = () => {
       <Main
         prefill={prefill}
         skipOtpVerification={Boolean(user.email)}
-        onBack={() => setScreen("login")}
       />
       <Typography align="center" sx={{ pb: 2, color: "#444", fontSize: 12 }}>
         Logged in as {user.email || "guest"}

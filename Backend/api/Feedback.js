@@ -34,7 +34,7 @@ function cleanupExpiredOtps() {
 }
 
 function isValidEmail(email) {
-  return typeof email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  return typeof email === "string" && /^[^\s@]+@gmail\.com$/i.test(email);
 }
 
 async function verifyRecaptcha(token, remoteIp) {
@@ -92,7 +92,7 @@ app.post("/otp/send", async (req, res) => {
     cleanupExpiredOtps();
     const { email } = req.body || {};
     if (!isValidEmail(email)) {
-      return res.status(400).json({ error: "Valid email is required." });
+      return res.status(400).json({ error: "A valid Gmail address is required." });
     }
 
     const now = Date.now();
@@ -101,6 +101,7 @@ app.post("/otp/send", async (req, res) => {
       const waitSeconds = Math.ceil((OTP_RESEND_MS - (now - existing.lastSentAt)) / 1000);
       return res.status(429).json({
         error: `Please wait ${waitSeconds} seconds before requesting another OTP.`,
+        retryAfterSeconds: waitSeconds,
       });
     }
 
@@ -125,8 +126,8 @@ app.post("/otp/send", async (req, res) => {
 app.post("/otp/verify", (req, res) => {
   cleanupExpiredOtps();
   const { email, otp } = req.body || {};
-  if (!isValidEmail(email) || !otp) {
-    return res.status(400).json({ error: "Valid email and OTP are required." });
+  if (!isValidEmail(email) || !/^\d{6}$/.test(String(otp))) {
+    return res.status(400).json({ error: "Valid email and 6-digit OTP are required." });
   }
 
   const stored = otpStore.get(email);
@@ -178,7 +179,11 @@ app.post("/feedback", async (req, res) => {
     }
 
     if (!isValidEmail(payload.email)) {
-      return res.status(400).json({ error: "Invalid email format." });
+      return res.status(400).json({ error: "A valid Gmail address is required." });
+    }
+
+    if (!/^\d{10}$/.test(String(payload.mobileNo))) {
+      return res.status(400).json({ error: "Mobile number must contain exactly 10 digits." });
     }
 
     const recaptchaValid = await verifyRecaptcha(

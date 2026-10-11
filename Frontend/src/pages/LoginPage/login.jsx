@@ -15,6 +15,11 @@ const Login = ({ onLoginSuccess, onGoSignup }) => {
       return;
     }
 
+    if (!/^\d{10}$/.test(mobileNo)) {
+      setStatus({ type: "error", message: "Mobile number must contain exactly 10 digits." });
+      return;
+    }
+
     if (!otpVerified) {
       setStatus({ type: "error", message: "Please verify OTP before continuing." });
       return;
@@ -36,7 +41,9 @@ const Login = ({ onLoginSuccess, onGoSignup }) => {
             <TextField
               label="Mobile Number"
               value={mobileNo}
-              onChange={(e) => setMobileNo(e.target.value.replace(/[^0-9]/g, ""))}
+              inputMode="numeric"
+              inputProps={{ maxLength: 10, pattern: "[0-9]*" }}
+              onChange={(e) => setMobileNo(e.target.value.replace(/\D/g, "").slice(0, 10))}
               required
             />
             <OtpVerification email={email} onEmailChange={setEmail} onVerified={setOtpVerified} />
